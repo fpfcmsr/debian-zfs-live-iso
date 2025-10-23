@@ -29,6 +29,7 @@ efivar
 # TPM + Clevis (TPM2 auto-unlock)
 tpm2-tools
 tpm2-openssl
+tpm2-initramfs-tool
 clevis
 clevis-luks
 clevis-initramfs
