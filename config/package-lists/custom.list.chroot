@@ -7,7 +7,6 @@ xterm
 # Storage & crypto tooling needed by the installer
 parted
 gdisk
-sgdisk
 mdadm
 cryptsetup
 cryptsetup-initramfs
@@ -25,10 +24,11 @@ efibootmgr
 sbsigntool
 mokutil
 openssl
+efivar
 
 # TPM + Clevis (TPM2 auto-unlock)
 tpm2-tools
-tpm2-tss
+tpm2-openssl
 clevis
 clevis-luks
 clevis-initramfs
