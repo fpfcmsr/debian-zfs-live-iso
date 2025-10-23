@@ -1,0 +1,93 @@
+name: Build ZFS Autoinstall ISO
+
+on:
+  schedule:
+    - cron: "0 3 1 * *"   # monthly on the 1st at 03:00 UTC
+  workflow_dispatch: {}
+  push:
+    paths:
+      - "auto/**"
+      - "config/**"
+      - ".github/workflows/build-iso.yml"
+      - "build.sh"
+
+permissions:
+  contents: write   # needed to create a Release
+
+# Cancel any in-progress run of this workflow (per branch) when a new one starts
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+  
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: debian:bookworm
+      options: --privileged   # live-build needs mount capabilities
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            live-build debootstrap cdebootstrap \
+            squashfs-tools xorriso syslinux-common \
+            dosfstools ca-certificates git
+
+      - name: Configure live-build
+        run: |
+          chmod +x auto/config
+          lb clean --purge || true
+          lb config     # your auto/config must use 'noauto'
+
+      - name: Build ISO
+        run: |
+          lb build 2>&1 | tee build.log
+          test -f live-image-amd64.hybrid.iso
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: zfs-autoinstall-iso-${{ github.run_number }}
+          path: |
+            live-image-amd64.hybrid.iso
+            build.log
+          retention-days: 14
+
+      - name: Make timestamp for tag/name
+        if: success()
+        id: ts
+        run: |
+          # Use UTC so tags are predictable and sortable.
+          TS="$(date -u +'%Y-%m-%d_%H-%M-%SZ')"
+          echo "ts=${TS}" >> "$GITHUB_OUTPUT"
+          echo "tag=iso-${TS}" >> "$GITHUB_OUTPUT"
+          echo "name=ZFS Autoinstall ISO ${TS}" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release (on every successful build)
+        if: success()
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.ts.outputs.tag }}
+          name: ${{ steps.ts.outputs.name }}
+          draft: false
+          prerelease: false
+          generate_release_notes: false
+          body: |
+            Automated build from workflow **${{ github.workflow }}**
+            - Run #: ${{ github.run_number }}
+            - Commit: ${{ github.sha }}
+            - Branch/Ref: ${{ github.ref }}
+            - Timestamp (UTC): ${{ steps.ts.outputs.ts }}
+
+            Files:
+            - `live-image-amd64.hybrid.iso`
+            - `build.log`
+          files: |
+            live-image-amd64.hybrid.iso
+            build.log
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

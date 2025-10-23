@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# Ask whether to start
+if command -v zenity >/dev/null 2>&1; then
+  zenity --question --title="Debian ZFS Installer" --text="Start the Debian ZFS-on-LUKS installer now?" || exit 0
+fi
+# Allow root to talk to X for zenity dialogs (best-effort)
+command -v xhost >/dev/null 2>&1 && xhost +SI:localuser:root >/dev/null 2>&1 || true
+# Run the installer as root, preserving DISPLAY
+sudo -E /usr/local/sbin/debian-zfs-gui-installer.sh

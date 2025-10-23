@@ -1,0 +1,43 @@
+# Minimal XFCE desktop + tools for GUI prompts
+task-xfce-desktop
+lightdm
+zenity
+xterm
+
+# Storage & crypto tooling needed by the installer
+parted
+gdisk
+sgdisk
+mdadm
+cryptsetup
+cryptsetup-initramfs
+
+# ZFS in live environment (so we can create pools)
+zfsutils-linux
+zfs-dkms
+dkms
+linux-headers-amd64
+
+# Bootloader & signing tools
+grub-efi-amd64
+shim-signed
+efibootmgr
+sbsigntool
+mokutil
+openssl
+
+# TPM + Clevis (TPM2 auto-unlock)
+tpm2-tools
+tpm2-tss
+clevis
+clevis-luks
+clevis-initramfs
+
+# Installer helpers
+debootstrap
+rsync
+curl
+wget
+vim
+git
+net-tools

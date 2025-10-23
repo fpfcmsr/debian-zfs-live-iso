@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Install Debian (ZFS-on-LUKS)
+Comment=Launch the custom ZFS-on-LUKS installer
+Exec=/usr/local/bin/run-installer-gui
+Terminal=false
+X-GNOME-Autostart-enabled=true
